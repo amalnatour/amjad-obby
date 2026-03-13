@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neon 999 Obby | Play in Browser</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
+    <style>
+        #ui { position: fixed; top: 20px; left: 20px; color: cyan; font-family: 'Courier New', Courier, monospace; z-index: 100; text-shadow: 2px 2px black; }
+        #p2w { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        button { background: #ff00ff; color: white; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 10px; box-shadow: 0 0 15px #ff00ff; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1>NEON SPIRAL OBBY</h1>
+        <p>Use WASD to Move | Space to Jump</p>
+        <p id="levelCounter">Level: 1 / 999</p>
+    </div>
+
+    <div id="p2w">
+        <button onclick="skipStage()">💰 SKIP STAGE (PAY TO WIN)</button>
+    </div>
+
+    <a-scene physics="debug: false; gravity: -9.8">
+        
+        <a-sky color="#050010"></a-sky>
+        <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+        <a-entity light="type: point; intensity: 2; distance: 50; decay: 2" position="0 10 0"></a-entity>
+
+        <a-entity id="rig" position="0 1.6 5" movement-controls="fly: false">
+            <a-entity camera position="0 5 10" rotation="-20 0 0" look-controls></a-entity>
+            <a-sphere id="player" radius="0.5" color="#ffffff" dynamic-body="mass: 1"></a-sphere>
+        </a-entity>
+
+        <a-entity id="obby-container"></a-entity>
+
+    </a-scene>
+
+    <script>
+        const container = document.querySelector('#obby-container');
+        const totalLevels = 999;
+        
+        // Generate 999 Levels
+        for (let i = 0; i < totalLevels; i++) {
+            let platform = document.createElement('a-box');
+            
+            // Math for the Spiral
+            let angle = i * 0.4;
+            let radius = 10;
+            let x = Math.cos(angle) * radius;
+            let z = Math.sin(angle) * radius;
+            let y = i * 2;
+
+            // Appearance
+            platform.setAttribute('position', `${x} ${y} ${z}`);
+            platform.setAttribute('width', '4');
+            platform.setAttribute('height', '0.5');
+            platform.setAttribute('depth', '4');
+            
+            // Rainbow Colors
+            let hue = (i * 15) % 360;
+            platform.setAttribute('color', `hsl(${hue}, 100%, 50%)`);
+            platform.setAttribute('material', 'emissive', `hsl(${hue}, 100%, 50%)`);
+            platform.setAttribute('material', 'emissiveIntensity', '0.5');
+            
+            // Physics
+            platform.setAttribute('static-body', '');
+            
+            container.appendChild(platform);
+        }
+
+        function skipStage() {
+            let rig = document.querySelector('#rig');
+            let currentPos = rig.getAttribute('position');
+            // Teleport the player up 10 levels
+            rig.setAttribute('position', `${currentPos.x} ${currentPos.y + 20} ${currentPos.z}`);
+            alert("Stage Skipped! You are winning!");
+        }
+
+        // Respawn logic
+        setInterval(() => {
+            let rig = document.querySelector('#rig');
+            let pos = rig.getAttribute('position');
+            if (pos.y < -5) {
+                rig.setAttribute('position', '0 1.6 5');
+            }
+            document.getElementById('levelCounter').innerText = `Level: ${Math.floor(pos.y / 2) + 1} / 999`;
+        }, 500);
+    </script>
+</body>
+</html>
